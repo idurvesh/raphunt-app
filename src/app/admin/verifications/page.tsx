@@ -32,16 +32,22 @@ export default function VerificationsPage() {
   }, [profile]);
 
   async function handle(request: VerificationRequest, action: "approved" | "rejected") {
-    await supabase
-      .from("verification_requests")
-      .update({ status: action })
-      .eq("id", request.id);
-
     if (action === "approved") {
+      // API route handles DB update + sends approval email via Resend
+      await fetch("/api/admin/verify-approve", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          requestId: request.id,
+          userId: request.user_id,
+          instagramHandle: request.instagram_handle,
+        }),
+      });
+    } else {
       await supabase
-        .from("profiles")
-        .update({ role: "artist", is_verified: true, instagram_handle: request.instagram_handle })
-        .eq("id", request.user_id);
+        .from("verification_requests")
+        .update({ status: "rejected" })
+        .eq("id", request.id);
     }
 
     setRequests((prev) => prev.map((r) => r.id === request.id ? { ...r, status: action } : r));
