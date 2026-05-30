@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/context/AuthContext";
@@ -13,6 +13,7 @@ const LANGUAGES = ["hindi", "english", "tamil", "bengali", "punjabi", "other"];
 export default function SubmitPage() {
   const router = useRouter();
   const { user, profile } = useAuth();
+  const [hasPendingRequest, setHasPendingRequest] = useState(false);
   const [mediaUrl, setMediaUrl] = useState("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -22,6 +23,19 @@ export default function SubmitPage() {
   const [thumbnail, setThumbnail] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // Check if this fan has a pending verification request
+  useEffect(() => {
+    if (user && profile && profile.role === "fan") {
+      supabase
+        .from("verification_requests")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("status", "pending")
+        .maybeSingle()
+        .then(({ data }) => setHasPendingRequest(!!data));
+    }
+  }, [user, profile]);
 
   function handleUrlChange(url: string) {
     setMediaUrl(url);
@@ -69,9 +83,19 @@ export default function SubmitPage() {
     <div className="min-h-screen flex items-center justify-center text-center px-4">
       <div>
         <p className="text-4xl mb-4">🎤</p>
-        <h2 className="text-xl font-bold mb-2">Artist Account Required</h2>
-        <p className="text-muted mb-4">You need a verified artist account to submit tracks.</p>
-        <a href="/verify-artist"><Button>Get Verified</Button></a>
+        {hasPendingRequest ? (
+          <>
+            <h2 className="text-xl font-bold mb-2">Verification Pending ⏳</h2>
+            <p className="text-muted mb-2">Your artist verification request is under review.</p>
+            <p className="text-muted text-sm">We&apos;ll email you at <strong className="text-white">desiraphunt.com</strong> once approved. Usually within 48 hours.</p>
+          </>
+        ) : (
+          <>
+            <h2 className="text-xl font-bold mb-2">Artist Account Required</h2>
+            <p className="text-muted mb-4">You need a verified artist account to submit tracks.</p>
+            <a href="/verify-artist"><Button>Get Verified</Button></a>
+          </>
+        )}
       </div>
     </div>
   );

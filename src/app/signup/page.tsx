@@ -34,13 +34,15 @@ export default function SignupPage() {
     }
 
     if (data.user) {
+      // Always create as "fan" — role only becomes "artist" after admin approval
       await supabase.from("profiles").upsert({
         id: data.user.id,
         username,
         display_name: username,
-        role,
+        role: "fan",
       });
 
+      // If they signed up as artist, send them to verify — but they can't post until approved
       if (role === "artist") router.push("/verify-artist");
       else router.push("/");
     }
