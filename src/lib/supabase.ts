@@ -24,13 +24,6 @@ function buildClient(): SupabaseClient {
 
   // Stub client: every method returns empty data so pages render cleanly
   // without a real Supabase project connected.
-  const noop = () => ({
-    data: null,
-    error: null,
-    count: 0,
-    then: (cb: (v: unknown) => unknown) => Promise.resolve(cb({ data: null, error: null, count: 0 })),
-  });
-
   const queryBuilder: Record<string, unknown> = new Proxy({}, {
     get() {
       return () => queryBuilder;
