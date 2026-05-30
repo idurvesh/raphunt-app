@@ -1,11 +1,14 @@
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Lazy init so build doesn't fail when RESEND_API_KEY is not set
+function getResend() {
+  return new Resend(process.env.RESEND_API_KEY);
+}
 
 const FROM = "RapHunt <noreply@desiraphunt.com>";
 
 export async function sendVerificationApprovedEmail(to: string, username: string) {
-  await resend.emails.send({
+  await getResend().emails.send({
     from: FROM,
     to,
     subject: "You're verified on RapHunt 🎤",
@@ -25,7 +28,7 @@ export async function sendVerificationApprovedEmail(to: string, username: string
 }
 
 export async function sendNewDropEmail(to: string, artistName: string, trackTitle: string, trackId: string) {
-  await resend.emails.send({
+  await getResend().emails.send({
     from: FROM,
     to,
     subject: `${artistName} just dropped "${trackTitle}" 🔥`,
