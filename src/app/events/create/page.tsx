@@ -60,46 +60,96 @@ export default function CreateEventPage() {
     setLoading(true);
     setError("");
 
-    // Create event
-    const { data: event, error: err } = await supabase
-      .from("events")
-      .insert({
-        organizer_id: user.id,
-        title,
-        description: description || null,
-        venue,
-        city,
-        event_date: eventDate,
-        ticket_url: ticketUrl || null,
-        poster_url: posterUrl || null,
-        genre: (genre as typeof genre) || null,
-        lineup: lineup.length > 0 ? lineup : null,
-        ticket_price_from: isFree ? null : parseInt(ticketPriceFrom) || null,
-        is_free: isFree,
-        listing_tier: tier,
-        listing_paid: false, // set to true after payment confirmation
-        is_featured: tier === "featured",
-      })
-      .select()
-      .single();
+    const amount = EVENT_TIER_PRICES[tier];
 
-    if (err || !event) {
-      setError(err?.message ?? "Failed to create event");
+    // Step 1: Create Razorpay order
+    const orderRes = await fetch("/api/razorpay/create-order", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        amount,
+        receipt: `event_${Date.now()}`,
+        notes: { tier, organizer: user.id },
+      }),
+    });
+
+    const { orderId, error: orderErr } = await orderRes.json();
+    if (orderErr || !orderId) {
+      setError("Could not initiate payment. Please try again.");
       setLoading(false);
       return;
     }
 
-    // Create pending payment record
-    await supabase.from("event_listing_payments").insert({
-      event_id: event.id,
-      organizer_id: user.id,
-      tier,
-      amount: EVENT_TIER_PRICES[tier],
-    });
+    // Step 2: Open Razorpay checkout modal
+    const eventData = {
+      title,
+      description: description || null,
+      venue,
+      city,
+      event_date: eventDate,
+      ticket_url: ticketUrl || null,
+      poster_url: posterUrl || null,
+      genre: genre || null,
+      lineup: lineup.length > 0 ? lineup : null,
+      ticket_price_from: isFree ? null : parseInt(ticketPriceFrom) || null,
+      is_free: isFree,
+      status: "upcoming",
+    };
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const Razorpay = (window as any).Razorpay;
+    if (!Razorpay) {
+      setError("Razorpay failed to load. Please refresh and try again.");
+      setLoading(false);
+      return;
+    }
+
+    const options = {
+      key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+      amount: amount * 100,
+      currency: "INR",
+      name: "DesiRapHunt",
+      description: `${TIER_INFO[tier].label} Event Listing`,
+      order_id: orderId,
+      prefill: { email: user.email ?? "" },
+      theme: { color: "#E63946" },
+      handler: async (response: {
+        razorpay_order_id: string;
+        razorpay_payment_id: string;
+        razorpay_signature: string;
+      }) => {
+        // Step 3: Verify payment and create event
+        const verifyRes = await fetch("/api/razorpay/verify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ...response,
+            eventData,
+            organizerId: user.id,
+            tier,
+            amount,
+          }),
+        });
+
+        const { success, eventId, error: verifyErr } = await verifyRes.json();
+        if (success && eventId) {
+          router.push(`/events/${eventId}?payment=success`);
+        } else {
+          setError(verifyErr ?? "Payment verification failed.");
+          setLoading(false);
+        }
+      },
+      modal: {
+        ondismiss: () => {
+          setError("Payment cancelled.");
+          setLoading(false);
+        },
+      },
+    };
+
+    const rzp = new Razorpay(options);
+    rzp.open();
     setLoading(false);
-    // In production, redirect to Razorpay here. For now go to event page.
-    router.push(`/events/${event.id}?new=1`);
   }
 
   if (!user) return (
@@ -354,16 +404,17 @@ export default function CreateEventPage() {
             </div>
           </div>
 
-          <div className="bg-yellow-900/20 border border-yellow-800 rounded-xl p-4 text-sm text-yellow-300">
-            ⚠️ Payment integration (Razorpay) coming soon. For now, your event will be submitted and our team will reach out to collect payment before it goes live.
+          <div className="bg-surface border border-border rounded-xl p-4 text-sm text-muted space-y-1">
+            <p className="text-white font-semibold">Secure payment via Razorpay</p>
+            <p>UPI, Cards, Net Banking and Wallets accepted. Your event goes live instantly after payment.</p>
           </div>
 
           {error && <p className="text-accent text-sm">{error}</p>}
 
           <div className="flex gap-3">
-            <Button variant="secondary" className="flex-1" onClick={() => setStep("tier")}>← Back</Button>
+            <Button variant="secondary" className="flex-1" onClick={() => setStep("tier")}>Back</Button>
             <Button className="flex-1" size="lg" disabled={loading} onClick={handleSubmit}>
-              {loading ? "Submitting..." : `Submit Event - ₹${EVENT_TIER_PRICES[tier].toLocaleString("en-IN")}`}
+              {loading ? "Opening payment..." : `Pay ₹${EVENT_TIER_PRICES[tier].toLocaleString("en-IN")} and List`}
             </Button>
           </div>
         </div>
