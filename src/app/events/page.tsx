@@ -110,7 +110,7 @@ export default function EventsPage() {
         <span className="text-2xl">💰</span>
         <div className="flex-1">
           <p className="font-semibold text-sm">Promote your event to thousands of hip-hop fans</p>
-          <p className="text-xs text-muted mt-0.5">Basic ₹499 · Premium ₹999 · Featured ₹2,499 — one-time listing fee</p>
+          <p className="text-xs text-muted mt-0.5">Basic ₹499 · Premium ₹999 · Featured ₹2,499 (one-time listing fee)</p>
         </div>
         <Link href="/events/create">
           <Button variant="secondary" size="sm">List Event →</Button>

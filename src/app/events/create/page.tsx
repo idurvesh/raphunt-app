@@ -276,7 +276,7 @@ export default function CreateEventPage() {
       {/* ─── Step 2: Tier selection ─── */}
       {step === "tier" && (
         <div className="space-y-5">
-          <p className="text-muted text-sm">Choose how prominently your event is listed. All plans are one-time listing fees — no subscription.</p>
+          <p className="text-muted text-sm">Choose how prominently your event is listed. All plans are one-time listing fees, no subscription.</p>
 
           <div className="space-y-3">
             {(["basic", "premium", "featured"] as EventListingTier[]).map((t) => {
@@ -337,7 +337,7 @@ export default function CreateEventPage() {
               ["Event", title],
               ["Venue", `${venue}, ${city}`],
               ["Date", new Date(eventDate).toLocaleString("en-IN")],
-              ["Lineup", lineup.join(", ") || "—"],
+              ["Lineup", lineup.join(", ") || "None"],
               ["Tickets", isFree ? "Free Entry" : ticketPriceFrom ? `from ₹${parseInt(ticketPriceFrom).toLocaleString("en-IN")}` : "TBA"],
               ["Listing Tier", `${TIER_INFO[tier].emoji} ${TIER_INFO[tier].label}`],
             ].map(([label, value]) => (
@@ -363,7 +363,7 @@ export default function CreateEventPage() {
           <div className="flex gap-3">
             <Button variant="secondary" className="flex-1" onClick={() => setStep("tier")}>← Back</Button>
             <Button className="flex-1" size="lg" disabled={loading} onClick={handleSubmit}>
-              {loading ? "Submitting…" : `Submit Event — ₹${EVENT_TIER_PRICES[tier].toLocaleString("en-IN")}`}
+              {loading ? "Submitting..." : `Submit Event - ₹${EVENT_TIER_PRICES[tier].toLocaleString("en-IN")}`}
             </Button>
           </div>
         </div>

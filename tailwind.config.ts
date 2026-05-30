@@ -8,6 +8,10 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        inter: ["var(--font-inter)", "system-ui", "sans-serif"],
+        grotesk: ["var(--font-space-grotesk)", "system-ui", "sans-serif"],
+      },
       colors: {
         background: "#0a0a0a",
         foreground: "#ffffff",
@@ -17,6 +21,10 @@ const config: Config = {
         "surface-2": "#1e1e1e",
         border: "#2a2a2a",
         muted: "#888888",
+      },
+      letterSpacing: {
+        tighter: "-0.03em",
+        tight: "-0.02em",
       },
     },
   },

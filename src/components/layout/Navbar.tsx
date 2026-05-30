@@ -11,9 +11,10 @@ export function Navbar() {
 
   return (
     <nav className="hidden md:flex fixed top-0 left-0 right-0 z-40 h-16 bg-background/95 backdrop-blur border-b border-border items-center px-6 gap-6">
-      <Link href="/" className="flex items-center gap-2 mr-4">
-        <span className="text-accent font-black text-2xl tracking-tight">RAP</span>
-        <span className="font-black text-2xl tracking-tight">HUNT</span>
+      <Link href="/" className="flex items-center mr-4">
+        <span className="font-display font-black text-2xl tracking-tighter">
+          <span className="text-accent">RAP</span>HUNT
+        </span>
       </Link>
 
       <div className="flex items-center gap-1">

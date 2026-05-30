@@ -75,11 +75,11 @@ export default function HomePage() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-6 space-y-6">
-      <div className="text-center py-8 space-y-2">
-        <h1 className="text-4xl md:text-6xl font-black tracking-tight">
+      <div className="text-center py-8 space-y-3">
+        <h1 className="font-display font-black text-5xl md:text-7xl tracking-tighter">
           <span className="text-accent">RAP</span>HUNT
         </h1>
-        <p className="text-muted text-lg">Indian hip-hop drops. Discover. Upvote. Repeat.</p>
+        <p className="text-muted text-base md:text-lg font-inter">Indian hip-hop drops. Discover. Upvote. Repeat.</p>
       </div>
 
       <Tabs tabs={HOME_TABS} active={tab} onChange={setTab} />

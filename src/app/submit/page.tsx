@@ -183,7 +183,7 @@ export default function SubmitPage() {
         {error && <p className="text-accent text-sm">{error}</p>}
 
         <Button type="submit" className="w-full" size="lg" disabled={loading}>
-          {loading ? "Submitting…" : "🚀 Drop It"}
+          {loading ? "Submitting..." : "🚀 Drop It"}
         </Button>
       </form>
     </div>

@@ -69,7 +69,7 @@ export default function VerifyArtistPage() {
           <div className="bg-yellow-900/20 border border-yellow-800 rounded-2xl p-6 text-center space-y-2">
             <div className="text-3xl">⏳</div>
             <h2 className="font-bold text-yellow-400">Verification Pending</h2>
-            <p className="text-sm text-muted">Your request is under review. We&apos;ll email you once approved — usually within 24–48 hours.</p>
+            <p className="text-sm text-muted">Your request is under review. We&apos;ll email you once approved, usually within 24–48 hours.</p>
             <p className="text-sm text-muted mt-1">Make sure you&apos;ve DM&apos;d <span className="text-white font-semibold">@RapHunt</span> on Instagram.</p>
           </div>
         ) : isRejected ? (
@@ -124,7 +124,7 @@ function VerifyForm({ handle, setHandle, loading, submit, user }: {
         </div>
       </div>
       <Button type="submit" className="w-full" size="lg" disabled={loading || !user}>
-        {loading ? "Submitting…" : "Submit Verification Request"}
+        {loading ? "Submitting..." : "Submit Verification Request"}
       </Button>
       {!user && <p className="text-center text-sm text-accent">Please sign in first</p>}
     </form>
