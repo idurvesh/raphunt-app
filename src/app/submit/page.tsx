@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/Button";
-import { getYouTubeId, isSpotifyUrl } from "@/lib/utils";
+import { getYouTubeId } from "@/lib/utils";
 
 const GENRES = [
   { value: "trap", label: "Trap" },
