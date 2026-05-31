@@ -1,6 +1,13 @@
 export type Role = "fan" | "artist" | "writer" | "admin";
-export type Genre = "trap" | "drill" | "boom_bap" | "conscious" | "other";
-export type Language = "hindi" | "english" | "tamil" | "bengali" | "punjabi" | "other";
+export type Genre =
+  | "trap" | "drill" | "boom_bap" | "conscious"
+  | "gully" | "desi_hiphop" | "lofi_hiphop" | "old_school"
+  | "battle_rap" | "freestyle" | "spoken_word" | "other";
+export type Language =
+  | "hindi" | "english" | "marathi" | "punjabi"
+  | "tamil" | "telugu" | "bengali" | "kannada"
+  | "malayalam" | "bhojpuri" | "haryanvi" | "gujarati"
+  | "odia" | "urdu" | "other";
 export type VerificationStatus = "pending" | "approved" | "rejected";
 
 export interface Profile {
@@ -22,6 +29,8 @@ export interface Launch {
   title: string;
   description: string | null;
   media_url: string;
+  youtube_url: string | null;
+  spotify_url: string | null;
   thumbnail_url: string | null;
   genre: Genre | null;
   language: Language | null;

@@ -70,7 +70,7 @@ export default function LaunchDetailPage() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8 space-y-6">
-      <LaunchPlayer mediaUrl={launch.media_url} />
+      <LaunchPlayer launch={launch} />
 
       <div className="space-y-3">
         <div className="flex items-start justify-between gap-4">

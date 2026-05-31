@@ -5,26 +5,56 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/Button";
-import { getYouTubeId } from "@/lib/utils";
+import { getYouTubeId, isSpotifyUrl } from "@/lib/utils";
 
-const GENRES = ["trap", "drill", "boom_bap", "conscious", "other"];
-const LANGUAGES = ["hindi", "english", "tamil", "bengali", "punjabi", "other"];
+const GENRES = [
+  { value: "trap", label: "Trap" },
+  { value: "drill", label: "Drill" },
+  { value: "boom_bap", label: "Boom Bap" },
+  { value: "conscious", label: "Conscious" },
+  { value: "gully", label: "Gully Rap" },
+  { value: "desi_hiphop", label: "Desi Hip-Hop" },
+  { value: "lofi_hiphop", label: "Lo-fi Hip-Hop" },
+  { value: "old_school", label: "Old School" },
+  { value: "battle_rap", label: "Battle Rap" },
+  { value: "freestyle", label: "Freestyle" },
+  { value: "spoken_word", label: "Spoken Word" },
+  { value: "other", label: "Other" },
+];
+
+const LANGUAGES = [
+  { value: "hindi", label: "Hindi" },
+  { value: "english", label: "English" },
+  { value: "marathi", label: "Marathi" },
+  { value: "punjabi", label: "Punjabi" },
+  { value: "tamil", label: "Tamil" },
+  { value: "telugu", label: "Telugu" },
+  { value: "bengali", label: "Bengali" },
+  { value: "kannada", label: "Kannada" },
+  { value: "malayalam", label: "Malayalam" },
+  { value: "bhojpuri", label: "Bhojpuri" },
+  { value: "haryanvi", label: "Haryanvi" },
+  { value: "gujarati", label: "Gujarati" },
+  { value: "odia", label: "Odia" },
+  { value: "urdu", label: "Urdu" },
+  { value: "other", label: "Other" },
+];
 
 export default function SubmitPage() {
   const router = useRouter();
   const { user, profile } = useAuth();
   const [hasPendingRequest, setHasPendingRequest] = useState(false);
-  const [mediaUrl, setMediaUrl] = useState("");
+  const [youtubeUrl, setYoutubeUrl] = useState("");
+  const [spotifyUrl, setSpotifyUrl] = useState("");
+  const [thumbnail, setThumbnail] = useState("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [genre, setGenre] = useState("");
   const [language, setLanguage] = useState("");
   const [city, setCity] = useState("");
-  const [thumbnail, setThumbnail] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Check if this fan has a pending verification request
   useEffect(() => {
     if (user && profile && profile.role === "fan") {
       supabase
@@ -37,10 +67,20 @@ export default function SubmitPage() {
     }
   }, [user, profile]);
 
-  function handleUrlChange(url: string) {
-    setMediaUrl(url);
+  function handleYouTubeChange(url: string) {
+    setYoutubeUrl(url);
     const ytId = getYouTubeId(url);
     if (ytId) setThumbnail(`https://img.youtube.com/vi/${ytId}/mqdefault.jpg`);
+    else if (!url) setThumbnail("");
+  }
+
+  function handleSpotifyChange(url: string) {
+    setSpotifyUrl(url);
+    // Auto-fill title from Spotify URL path if title empty
+    if (!title && url.includes("spotify.com/track/")) {
+      // e.g. open.spotify.com/track/xxxxx?si=yyy
+      // We can't fetch metadata client-side without API, just keep it clean
+    }
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -51,14 +91,23 @@ export default function SubmitPage() {
       return;
     }
 
+    // At least one URL required
+    const primaryUrl = youtubeUrl.trim() || spotifyUrl.trim();
+    if (!primaryUrl) {
+      setError("Please add at least a YouTube or Spotify link.");
+      return;
+    }
+
     setLoading(true);
     setError("");
 
     const { error: err } = await supabase.from("launches").insert({
       artist_id: user.id,
       title,
-      description,
-      media_url: mediaUrl,
+      description: description || null,
+      media_url: primaryUrl,
+      spotify_url: spotifyUrl.trim() || null,
+      youtube_url: youtubeUrl.trim() || null,
       thumbnail_url: thumbnail || null,
       genre: genre || null,
       language: language || null,
@@ -87,7 +136,7 @@ export default function SubmitPage() {
           <>
             <h2 className="text-xl font-bold mb-2">Verification Pending ⏳</h2>
             <p className="text-muted mb-2">Your artist verification request is under review.</p>
-            <p className="text-muted text-sm">We&apos;ll email you at <strong className="text-white">desiraphunt.com</strong> once approved. Usually within 48 hours.</p>
+            <p className="text-muted text-sm">We&apos;ll email you once approved. Usually within 48 hours.</p>
           </>
         ) : (
           <>
@@ -105,22 +154,42 @@ export default function SubmitPage() {
       <h1 className="text-2xl font-black">Drop a Track 🎤</h1>
 
       <form onSubmit={handleSubmit} className="space-y-5">
+
+        {/* YouTube */}
         <div>
-          <label className="block text-sm font-medium mb-1">YouTube or Spotify URL *</label>
+          <label className="block text-sm font-medium mb-1 flex items-center gap-2">
+            <span className="text-red-500">▶</span> YouTube URL
+          </label>
           <input
             type="url"
-            value={mediaUrl}
-            onChange={(e) => handleUrlChange(e.target.value)}
+            value={youtubeUrl}
+            onChange={(e) => handleYouTubeChange(e.target.value)}
             className="w-full bg-surface-2 border border-border rounded-xl px-4 py-3 text-white placeholder-muted focus:outline-none focus:border-accent"
             placeholder="https://youtube.com/watch?v=..."
-            required
           />
           {thumbnail && (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={thumbnail} alt="thumbnail preview" className="mt-2 rounded-xl w-full max-h-40 object-cover" />
+            <img src={thumbnail} alt="thumbnail" className="mt-2 rounded-xl w-full max-h-40 object-cover" />
           )}
         </div>
 
+        {/* Spotify */}
+        <div>
+          <label className="block text-sm font-medium mb-1 flex items-center gap-2">
+            <span className="text-green-500">♫</span> Spotify URL
+          </label>
+          <input
+            type="url"
+            value={spotifyUrl}
+            onChange={(e) => handleSpotifyChange(e.target.value)}
+            className="w-full bg-surface-2 border border-border rounded-xl px-4 py-3 text-white placeholder-muted focus:outline-none focus:border-accent"
+            placeholder="https://open.spotify.com/track/..."
+          />
+        </div>
+
+        <p className="text-xs text-muted -mt-2">Add at least one link. Both is better — fans can listen on their preferred platform.</p>
+
+        {/* Title */}
         <div>
           <label className="block text-sm font-medium mb-1">Track Title *</label>
           <input
@@ -133,6 +202,7 @@ export default function SubmitPage() {
           />
         </div>
 
+        {/* Description */}
         <div>
           <label className="block text-sm font-medium mb-1">Description</label>
           <textarea
@@ -144,6 +214,7 @@ export default function SubmitPage() {
           />
         </div>
 
+        {/* Genre + Language */}
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium mb-1">Genre</label>
@@ -153,7 +224,7 @@ export default function SubmitPage() {
               className="w-full bg-surface-2 border border-border rounded-xl px-4 py-3 text-white focus:outline-none focus:border-accent"
             >
               <option value="">Select genre</option>
-              {GENRES.map((g) => <option key={g} value={g}>{g}</option>)}
+              {GENRES.map((g) => <option key={g.value} value={g.value}>{g.label}</option>)}
             </select>
           </div>
           <div>
@@ -164,11 +235,12 @@ export default function SubmitPage() {
               className="w-full bg-surface-2 border border-border rounded-xl px-4 py-3 text-white focus:outline-none focus:border-accent"
             >
               <option value="">Select language</option>
-              {LANGUAGES.map((l) => <option key={l} value={l}>{l}</option>)}
+              {LANGUAGES.map((l) => <option key={l.value} value={l.value}>{l.label}</option>)}
             </select>
           </div>
         </div>
 
+        {/* City */}
         <div>
           <label className="block text-sm font-medium mb-1">City</label>
           <input
@@ -176,14 +248,14 @@ export default function SubmitPage() {
             value={city}
             onChange={(e) => setCity(e.target.value)}
             className="w-full bg-surface-2 border border-border rounded-xl px-4 py-3 text-white placeholder-muted focus:outline-none focus:border-accent"
-            placeholder="Mumbai, Delhi, Kolkata..."
+            placeholder="Mumbai, Delhi, Pune..."
           />
         </div>
 
         {error && <p className="text-accent text-sm">{error}</p>}
 
-        <Button type="submit" className="w-full" size="lg" disabled={loading}>
-          {loading ? "Submitting..." : "🚀 Drop It"}
+        <Button type="submit" className="w-full" size="lg" disabled={loading || (!youtubeUrl && !spotifyUrl)}>
+          {loading ? "Dropping..." : "🚀 Drop It"}
         </Button>
       </form>
     </div>
