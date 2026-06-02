@@ -5,6 +5,7 @@ import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 import { Navbar } from "@/components/layout/Navbar";
 import { BottomNav } from "@/components/layout/BottomNav";
+import { Footer } from "@/components/layout/Footer";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -31,13 +32,14 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${inter.variable} ${spaceGrotesk.variable}`}>
-      <body className="antialiased bg-background text-foreground font-inter">
+      <body className="antialiased bg-background text-foreground font-inter flex flex-col min-h-screen">
         <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
         <AuthProvider>
           <Navbar />
-          <main className="min-h-screen pt-0 md:pt-16 pb-20 md:pb-0">
+          <main className="flex-grow pt-0 md:pt-16 pb-20 md:pb-0">
             {children}
           </main>
+          <Footer />
           <BottomNav />
         </AuthProvider>
       </body>
