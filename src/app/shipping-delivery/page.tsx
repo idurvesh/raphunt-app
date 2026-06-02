@@ -49,8 +49,12 @@ export default function ShippingDeliveryPage() {
         </p>
         <div className="bg-surface p-4 rounded-xl border border-border">
           <p className="text-white font-medium">RapHunt Operations Support</p>
-          <p>Email: <a href="mailto:support@raphunt.com" className="text-accent hover:underline">support@raphunt.com</a></p>
-          <p>Phone: +91 98765 43210</p>
+          {process.env.NEXT_PUBLIC_SUPPORT_EMAIL && (
+            <p>Email: <a href={`mailto:${process.env.NEXT_PUBLIC_SUPPORT_EMAIL}`} className="text-accent hover:underline">{process.env.NEXT_PUBLIC_SUPPORT_EMAIL}</a></p>
+          )}
+          {process.env.NEXT_PUBLIC_SUPPORT_PHONE && (
+            <p>Phone: {process.env.NEXT_PUBLIC_SUPPORT_PHONE}</p>
+          )}
         </div>
       </div>
     </div>

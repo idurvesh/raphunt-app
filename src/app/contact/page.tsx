@@ -38,30 +38,36 @@ export default function ContactPage() {
           <h2 className="text-xl font-bold text-white">Support & Operations</h2>
           
           <div className="space-y-4 text-sm">
-            <div className="space-y-1">
-              <p className="text-muted font-medium">Email Support</p>
-              <p className="text-white font-semibold hover:text-accent transition-colors">
-                <a href="mailto:support@raphunt.com">support@raphunt.com</a>
-              </p>
-            </div>
+            {process.env.NEXT_PUBLIC_SUPPORT_EMAIL && (
+              <div className="space-y-1">
+                <p className="text-muted font-medium">Email Support</p>
+                <p className="text-white font-semibold hover:text-accent transition-colors">
+                  <a href={`mailto:${process.env.NEXT_PUBLIC_SUPPORT_EMAIL}`}>
+                    {process.env.NEXT_PUBLIC_SUPPORT_EMAIL}
+                  </a>
+                </p>
+              </div>
+            )}
 
-            <div className="space-y-1">
-              <p className="text-muted font-medium">Phone Support</p>
-              <p className="text-white font-semibold">
-                <a href="tel:+919876543210">+91 98765 43210</a>
-              </p>
-            </div>
+            {process.env.NEXT_PUBLIC_SUPPORT_PHONE && (
+              <div className="space-y-1">
+                <p className="text-muted font-medium">Phone Support</p>
+                <p className="text-white font-semibold hover:text-accent transition-colors">
+                  <a href={`tel:${process.env.NEXT_PUBLIC_SUPPORT_PHONE}`}>
+                    {process.env.NEXT_PUBLIC_SUPPORT_PHONE}
+                  </a>
+                </p>
+              </div>
+            )}
 
-            <div className="space-y-1">
-              <p className="text-muted font-medium">Business Address</p>
-              <p className="text-white font-semibold leading-relaxed">
-                RapHunt India Operations,<br />
-                Flat 402, Shiv Shanti Chambers,<br />
-                Link Road, Andheri West,<br />
-                Mumbai, Maharashtra, 400053<br />
-                India
-              </p>
-            </div>
+            {process.env.NEXT_PUBLIC_SUPPORT_ADDRESS && (
+              <div className="space-y-1">
+                <p className="text-muted font-medium">Business Address</p>
+                <p className="text-white font-semibold leading-relaxed whitespace-pre-line">
+                  {process.env.NEXT_PUBLIC_SUPPORT_ADDRESS}
+                </p>
+              </div>
+            )}
 
             <div className="space-y-1 pt-2 border-t border-border">
               <p className="text-muted font-medium">Operating Hours</p>

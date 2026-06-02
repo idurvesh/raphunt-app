@@ -63,7 +63,7 @@ export default function TermsConditionsPage() {
 
         <h2 className="text-xl font-bold text-white pt-4 border-t border-border">8. Contact Us</h2>
         <p>
-          For any clarifications regarding our Terms and Conditions, please email us at <a href="mailto:support@raphunt.com" className="text-accent hover:underline">support@raphunt.com</a>.
+          For any clarifications regarding our Terms and Conditions, please email us at {process.env.NEXT_PUBLIC_SUPPORT_EMAIL ? <a href={`mailto:${process.env.NEXT_PUBLIC_SUPPORT_EMAIL}`} className="text-accent hover:underline">{process.env.NEXT_PUBLIC_SUPPORT_EMAIL}</a> : "our support team"}.
         </p>
       </div>
     </div>

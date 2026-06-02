@@ -64,7 +64,9 @@ export default function RefundCancellationPage() {
         </p>
         <div className="bg-surface p-4 rounded-xl border border-border">
           <p className="text-white font-medium">RapHunt Payments Desk</p>
-          <p>Email: <a href="mailto:billing@raphunt.com" className="text-accent hover:underline">billing@raphunt.com</a> (cc: <a href="mailto:support@raphunt.com" className="text-accent hover:underline">support@raphunt.com</a>)</p>
+          {process.env.NEXT_PUBLIC_SUPPORT_EMAIL && (
+            <p>Email: <a href={`mailto:${process.env.NEXT_PUBLIC_SUPPORT_EMAIL}`} className="text-accent hover:underline">{process.env.NEXT_PUBLIC_SUPPORT_EMAIL}</a></p>
+          )}
           <p>Provide your order ID, email address, transaction reference, and the link to your listed event.</p>
         </div>
       </div>

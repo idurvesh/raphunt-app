@@ -61,7 +61,7 @@ export default function PrivacyPolicyPage() {
 
         <h2 className="text-xl font-bold text-white pt-4 border-t border-border">6. Your Data Rights</h2>
         <p>
-          You have the right to request access to, correction of, or deletion of the personal data we hold about you. You can update your profile information in your account settings or contact our support team at <a href="mailto:support@raphunt.com" className="text-accent hover:underline">support@raphunt.com</a> to request account erasure.
+          You have the right to request access to, correction of, or deletion of the personal data we hold about you. You can update your profile information in your account settings or contact our support team at {process.env.NEXT_PUBLIC_SUPPORT_EMAIL ? <a href={`mailto:${process.env.NEXT_PUBLIC_SUPPORT_EMAIL}`} className="text-accent hover:underline">{process.env.NEXT_PUBLIC_SUPPORT_EMAIL}</a> : "our support team"} to request account erasure.
         </p>
 
         <h2 className="text-xl font-bold text-white pt-4 border-t border-border">7. Contact Information</h2>
@@ -70,8 +70,12 @@ export default function PrivacyPolicyPage() {
         </p>
         <div className="bg-surface p-4 rounded-xl border border-border">
           <p className="text-white font-medium">RapHunt Operations</p>
-          <p>Email: <a href="mailto:support@raphunt.com" className="text-accent hover:underline">support@raphunt.com</a></p>
-          <p>Address: Flat 402, Shiv Shanti Chambers, Link Road, Andheri West, Mumbai, MH, 400053, India</p>
+          {process.env.NEXT_PUBLIC_SUPPORT_EMAIL && (
+            <p>Email: <a href={`mailto:${process.env.NEXT_PUBLIC_SUPPORT_EMAIL}`} className="text-accent hover:underline">{process.env.NEXT_PUBLIC_SUPPORT_EMAIL}</a></p>
+          )}
+          {process.env.NEXT_PUBLIC_SUPPORT_ADDRESS && (
+            <p className="whitespace-pre-line">Address: {process.env.NEXT_PUBLIC_SUPPORT_ADDRESS}</p>
+          )}
         </div>
       </div>
     </div>
