@@ -12,7 +12,8 @@ export default function SignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
-  const [role, setRole] = useState<"fan" | "artist">("fan");
+  const [role, setRole] = useState<"fan" | "artist" | null>(null);
+  const [step, setStep] = useState<"role" | "details">("role");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -65,7 +66,7 @@ export default function SignupPage() {
                 <button
                   key={r}
                   type="button"
-                  onClick={() => setRole(r)}
+                  onClick={() => { setRole(r); setStep("details"); }}
                   className={cn(
                     "py-3 rounded-xl border font-semibold text-sm transition-all",
                     role === r
@@ -79,44 +80,58 @@ export default function SignupPage() {
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium mb-1">Username</label>
-            <input
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/\s/g, ""))}
-              className="w-full bg-surface-2 border border-border rounded-xl px-4 py-3 text-white placeholder-muted focus:outline-none focus:border-accent"
-              placeholder="your_handle"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full bg-surface-2 border border-border rounded-xl px-4 py-3 text-white placeholder-muted focus:outline-none focus:border-accent"
-              placeholder="you@example.com"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-surface-2 border border-border rounded-xl px-4 py-3 text-white placeholder-muted focus:outline-none focus:border-accent"
-              placeholder="min. 8 characters"
-              minLength={8}
-              required
-            />
-          </div>
-          {error && <p className="text-accent text-sm">{error}</p>}
-          <Button type="submit" className="w-full" size="lg" disabled={loading}>
-            {loading ? "Creating account…" : "Create account"}
-          </Button>
+          {step === "details" && (
+            <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
+              {role === "artist" && (
+                <p className="text-xs text-muted">Artists go through a quick verification after signup to start dropping.</p>
+              )}
+              <div>
+                <label className="block text-sm font-medium mb-1">Username</label>
+                <input
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/\s/g, ""))}
+                  className="w-full bg-surface-2 border border-border rounded-xl px-4 py-3 text-white placeholder-muted focus:outline-none focus:border-accent"
+                  placeholder="your_handle"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Email</label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full bg-surface-2 border border-border rounded-xl px-4 py-3 text-white placeholder-muted focus:outline-none focus:border-accent"
+                  placeholder="you@example.com"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Password</label>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full bg-surface-2 border border-border rounded-xl px-4 py-3 text-white placeholder-muted focus:outline-none focus:border-accent"
+                  placeholder="min. 8 characters"
+                  minLength={8}
+                  required
+                />
+              </div>
+              {error && <p className="text-accent text-sm">{error}</p>}
+              <Button type="submit" className="w-full" size="lg" disabled={loading}>
+                {loading ? "Creating account…" : "Create account"}
+              </Button>
+              <button
+                type="button"
+                onClick={() => { setStep("role"); setRole(null); }}
+                className="w-full text-sm text-muted hover:text-white transition-colors"
+              >
+                ← Change role
+              </button>
+            </div>
+          )}
         </form>
 
         <p className="text-center text-sm text-muted">
