@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/utils";
 import type { EventListingTier } from "@/types/database";
 import { EVENT_TIER_PRICES } from "@/types/database";
+import { load } from "@cashfreepayments/cashfree-js";
 
 const GENRES = ["trap", "drill", "boom_bap", "conscious", "other"];
 const CITIES = ["Mumbai", "Delhi", "Kolkata", "Chennai", "Bangalore", "Hyderabad", "Pune", "Ahmedabad", "Other"];
@@ -61,25 +62,43 @@ export default function CreateEventPage() {
 
     const amount = EVENT_TIER_PRICES[tier];
 
-    // Step 1: Create Razorpay order
-    const orderRes = await fetch("/api/razorpay/create-order", {
+    // Step 1: Create Cashfree order
+    const orderRes = await fetch("/api/cashfree/create-order", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         amount,
         receipt: `event_${Date.now()}`,
-        notes: { tier, organizer: user.id },
+        email: user.email ?? "customer@example.com",
+        userId: user.id,
       }),
     });
 
-    const { orderId, error: orderErr } = await orderRes.json();
-    if (orderErr || !orderId) {
-      setError("Could not initiate payment. Please try again.");
+    const { paymentSessionId, orderId, error: orderErr } = await orderRes.json();
+    if (orderErr || !paymentSessionId) {
+      setError(orderErr ?? "Could not initiate payment. Please try again.");
       setLoading(false);
       return;
     }
 
-    // Step 2: Open Razorpay checkout modal
+    // Step 2: Initialize Cashfree Client SDK
+    let cashfree;
+    try {
+      const mode = (process.env.NEXT_PUBLIC_CASHFREE_ENVIRONMENT === "production" ? "production" : "sandbox") as "production" | "sandbox";
+      cashfree = await load({ mode });
+    } catch (sdkLoadErr) {
+      console.error("Cashfree SDK load failed:", sdkLoadErr);
+      setError("Failed to load payment gateway. Please try again.");
+      setLoading(false);
+      return;
+    }
+
+    if (!cashfree) {
+      setError("Payment gateway failed to initialize. Please refresh and try again.");
+      setLoading(false);
+      return;
+    }
+
     const eventData = {
       title,
       description: description || null,
@@ -95,60 +114,41 @@ export default function CreateEventPage() {
       status: "upcoming",
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const Razorpay = (window as any).Razorpay;
-    if (!Razorpay) {
-      setError("Razorpay failed to load. Please refresh and try again.");
+    // Step 3: Trigger checkout overlay
+    try {
+      await cashfree.checkout({
+        paymentSessionId,
+        redirectTarget: "_modal",
+      });
+
+      // Checkout finishes. Let's call verification API.
+      setLoading(true);
+      setError("");
+
+      const verifyRes = await fetch("/api/cashfree/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          orderId,
+          eventData,
+          organizerId: user.id,
+          tier,
+          amount,
+        }),
+      });
+
+      const { success, eventId, error: verifyErr } = await verifyRes.json();
+      if (success && eventId) {
+        router.push(`/events/${eventId}?payment=success`);
+      } else {
+        setError(verifyErr ?? "Payment verification failed.");
+        setLoading(false);
+      }
+    } catch (err: unknown) {
+      console.error("Cashfree checkout error:", err);
+      setError("Payment window closed or check failed.");
       setLoading(false);
-      return;
     }
-
-    const options = {
-      key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
-      amount: amount * 100,
-      currency: "INR",
-      name: "DesiRapHunt",
-      description: `${TIER_INFO[tier].label} Event Listing`,
-      order_id: orderId,
-      prefill: { email: user.email ?? "" },
-      theme: { color: "#E63946" },
-      handler: async (response: {
-        razorpay_order_id: string;
-        razorpay_payment_id: string;
-        razorpay_signature: string;
-      }) => {
-        // Step 3: Verify payment and create event
-        const verifyRes = await fetch("/api/razorpay/verify", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            ...response,
-            eventData,
-            organizerId: user.id,
-            tier,
-            amount,
-          }),
-        });
-
-        const { success, eventId, error: verifyErr } = await verifyRes.json();
-        if (success && eventId) {
-          router.push(`/events/${eventId}?payment=success`);
-        } else {
-          setError(verifyErr ?? "Payment verification failed.");
-          setLoading(false);
-        }
-      },
-      modal: {
-        ondismiss: () => {
-          setError("Payment cancelled.");
-          setLoading(false);
-        },
-      },
-    };
-
-    const rzp = new Razorpay(options);
-    rzp.open();
-    setLoading(false);
   }
 
   if (!user) return (
@@ -404,7 +404,7 @@ export default function CreateEventPage() {
           </div>
 
           <div className="bg-surface border border-border rounded-xl p-4 text-sm text-muted space-y-1">
-            <p className="text-white font-semibold">Secure payment via Razorpay</p>
+            <p className="text-white font-semibold">Secure payment via Cashfree</p>
             <p>UPI, Cards, Net Banking and Wallets accepted. Your event goes live instantly after payment.</p>
           </div>
 
