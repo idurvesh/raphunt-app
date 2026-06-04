@@ -6,6 +6,11 @@ export function Footer() {
   return (
     <footer className="bg-surface border-t border-border mt-auto w-full">
       <div className="max-w-7xl mx-auto px-6 py-12 md:py-16">
+          {/* Powered By Banner */}
+          <div className="text-center mb-10">
+            <p className="text-xs text-muted tracking-widest uppercase font-semibold">Powered by</p>
+            <p className="font-display font-black text-xl md:text-2xl text-white tracking-tight">DigiNhance</p>
+          </div>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-12">
           {/* Logo & Description */}
           <div className="space-y-4 md:col-span-2">
